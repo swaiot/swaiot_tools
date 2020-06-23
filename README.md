@@ -193,7 +193,7 @@ Swaiot 物端设备对接工具（SDK动态生成工具）
 ###### Keil以及MDK移植参考及接口说明
 
 1、将swaiot文件夹添加至工产品原始工程程中。
-<img src="https://docman.skyworthiot.com/uploads/prod-access-doc/images/m_5d0f425b65b460cd36b5b1aeb50958fb_r.PNG " alt="添加工程" style="zoom: 50%;" />
+<img src="https://docman.skyworthiot.com/uploads/prod-access-doc/images/m_5d0f425b65b460cd36b5b1aeb50958fb_r.PNG" alt="添加工程" style="zoom: 50%;" />
 
 2、将swaiot和swaiot/lib两个文件夹添加至Include Pahts中。根据代码大小设置优化等级
 
