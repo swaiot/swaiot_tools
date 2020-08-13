@@ -1,6 +1,4 @@
-# swaiot_tools
-Swaiot 物端设备对接工具（SDK动态生成工具）
-# SWAIOT物端对接工具使用指南
+# Swaiot物端对接工具使用指南
 
 ### 简介：
 
@@ -9,6 +7,7 @@ Swaiot 物端设备对接工具（SDK动态生成工具）
 ​	工具及说明下载地址：
 
 ​	https://github.com/swaiot/swaiot_tools
+
 
 ​	*本说明版权属于 深圳创维-RGB电子有限公司，由SWAIOT实验室维护。如有更改，恕不另行通知。20206.16*
 
@@ -64,7 +63,7 @@ Swaiot 物端设备对接工具（SDK动态生成工具）
 
 ​	**“支持属性类型”**：将改变默认支持的属性类型，与属性设置联动。（如果如果关闭了部分类型，即使属性设置中纯在遗留的属性项，最终页不会导出与此类型相关的接口）
 
-![](https://docman.skyworthiot.com/uploads/prod-access-doc/images/m_8619d66a2817f85009f056652548b1d2_r.png)
+![](https://docman.skyworthiot.com/uploads/prod-access-doc/images/m_eb8029e8aeb5e936eae832b940fd63ab_r.png)
 
 ​	**“可选扩展功能”**：（WIFI物联模块的专属功能，智慧屏不支持），请根据需求选择添加功能
 
@@ -141,7 +140,7 @@ Swaiot 物端设备对接工具（SDK动态生成工具）
 ![](https://docman.skyworthiot.com/uploads/prod-access-doc/images/m_520f6575b2ae821a90e646a19575459f_r.png)
 
 
-# SWAIOT物端SDK使用指南
+# Swaiot物端SDK使用指南
 
 ### 简介：
 
@@ -193,7 +192,7 @@ Swaiot 物端设备对接工具（SDK动态生成工具）
 ###### Keil以及MDK移植参考及接口说明
 
 1、将swaiot文件夹添加至工产品原始工程程中。
-<img src="https://docman.skyworthiot.com/uploads/prod-access-doc/images/m_5d0f425b65b460cd36b5b1aeb50958fb_r.PNG" alt="添加工程" style="zoom: 50%;" />
+<img src="https://docman.skyworthiot.com/uploads/prod-access-doc/images/m_5d0f425b65b460cd36b5b1aeb50958fb_r.PNG " alt="添加工程" style="zoom: 50%;" />
 
 2、将swaiot和swaiot/lib两个文件夹添加至Include Pahts中。根据代码大小设置优化等级
 
@@ -406,7 +405,7 @@ extern void sendCmdGetRssi(void);
 
 
 
-​	⑤、属性发送函数
+​	⑤、属性发送函数（**由于为了更简单的兼容51系芯片，SDK中不使用函数指针进行动态注入**）
 
 ​			根据您使用iot_tools工具中配置的不同的属性，系统会自动生成属性更新函数。函数命名规则为：
 
@@ -483,9 +482,9 @@ void moduleStateChangeHandler(ENUM_MODULE_STATE_SKY state){
    }else if(state == STA_STATE_CONFIGING){
      // 配网或联网中，需要提示wifi状态（WIFI指示灯闪烁5分钟）
    }else if(state == STA_STATE_CONNECTED){
-     // 联网成功，可忽略
+     // 联网成功，可忽略或提示wifi状态（WIFI指示灯快速闪烁）
    }else if(state == STA_STATE_DISCONNECT_SERVER){
-     // 服务器连接失败，可忽略或报错
+     // 连接断开，需要提示关闭WIFI提示灯
    }else if(state == STA_STATE_CONNECTED_SERVER){
      // 服务器连接成功，需要提示wifi状态（WIFI指示灯常量）
    }else if(state == STA_STATE_IN_FACTORY_MODE){
@@ -520,25 +519,32 @@ void moduleStateChangeHandler(ENUM_MODULE_STATE_SKY state){
 
 ​			代码中会自动生成通过strcmp生成判断结构，你可以在if语句中添加自己需要的操作。
 
+​			例如设置了一个名为POW_S的8位属性，代码中会自动添加
+
+​					if(0 == strcmp(name, PROD_POW_S_NAME))
+
+​			相关状态判断
+
 ```c
 #ifdef SUPPORT_DATA_TYPE_INT8 
 /*************************************************************************** 
-Function....: receiveAPropS8 
+Function....: receiveAPropU8 
 Description.: Callback function for updating 8-bit property 
 Parameters..: char *name: property name(string) 
-Parameters..: iot_s8_t value: command value(int8_t), you can cast to an unsigned type. 
+Parameters..: iot_u8_t value: command value(uint8_t). 
 Return......: NONE 
 Explain.....: Distinguishing property names by using strcmp(s1, s2) 
 ****************************************************************************/ 
-  void receiveAPropS8(char *name, iot_s8_t value){ 
-      // has a s8 data 
+  void receiveAPropU8(char *name, iot_u8_t value){ 
+      // has a uint8_t data 
     if(0 == strcmp(name, PROD_POW_S_NAME)){ 
       // has POW_S 
     } 
+………………
   } 
 #endif 
 ………………
-  void receiveAPropS16(char *name, iot_s16_t value){ 
+  void receiveAPropU16(char *name, iot_u16_t value){
 ………………
   } 
 ………………
@@ -555,7 +561,17 @@ Explain.....: Distinguishing property names by using strcmp(s1, s2)
   } 
 ```
 
+​			其中 :
 
+​				void receiveAPropU8(char *name, iot_u8_t value) 代表八位无符号属性的接收回调函数
+
+​				void receiveAPropU16(char *name, iot_u16_t value) 代表十六位无符号属性的接收回调函数
+
+​				void receiveAPropS32(char *name , iot_s32_t value) 代表三十二位有符号属性的接收回调函数
+
+​				void receiveAPropF32(char *name , float value)代表三十二位单浮点属性的接收回调函数
+
+​				void receiveAPropStr(char *name , char *value_p) 代表字符串属性的接收回调函数
 
 ​	③、其他功能回调函数
 
